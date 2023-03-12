@@ -35,7 +35,7 @@ function dragElement(elmnt) {
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        updateLine(elmnt.style.top, elmnt.style.left)
+        updateLine(elmnt.offsetTop - pos2, elmnt.offsetLeft - pos1)
     }
 
     function closeDragElement() {
@@ -47,17 +47,15 @@ function dragElement(elmnt) {
     function updateLine(top, left) {
         let lineId = document.querySelector(`line[id*=${elmnt.id}]`).id
         let isStartingLine = lineId.slice(0, elmnt.id.length) == elmnt.id
-        console.log(`${lineId.slice(0, elmnt.id.length - 1)} - ${elmnt.id}`)
+        let x = left + "px"
+        let y = top + (elmnt.offsetHeight / 2) + "px"
+        let line = document.getElementById(lineId)
         if (isStartingLine) {
-            console.log("startingLine");
-            let line = document.getElementById(lineId)
-            line.setAttribute('x1', left)
-            line.setAttribute('y1', top)
+            line.setAttribute('x1', x)
+            line.setAttribute('y1', y)
         } else {
-            console.log("endingLine")
-            let line = document.getElementById(lineId)
-            line.setAttribute('x2', left)
-            line.setAttribute('y2', top)
+            line.setAttribute('x2', x)
+            line.setAttribute('y2', y)
         }
     }
 }
@@ -70,8 +68,8 @@ function renderLines() {
 
     console.log(firstBox.style.top)
 
-    line.setAttribute('x1', firstBox.style.left || 0)
-    line.setAttribute('y1', firstBox.style.top || 0)
-    line.setAttribute('x2', secondBox.style.left || 0)
-    line.setAttribute('y2', secondBox.style.top || 0)
+    line.setAttribute('x1', "0px")
+    line.setAttribute('y1', firstBox.offsetHeight / 2 + "px")
+    line.setAttribute('x2', "0px")
+    line.setAttribute('y2', secondBox.offsetHeight / 2 + "px")
 }
