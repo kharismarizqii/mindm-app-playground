@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="infinite-space">
+        <!-- Draggable DIV -->
+        <div id="mydiv" class="draggable">
+            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+            <div class="draggable-header">Click here to move</div>
+            <p>Move</p>
+            <p>this</p>
+            <p>DIV</p>
+        </div>
+        <svg id="container-line1-2">
+            <line id="line1-2" x1="50" y1="10" x2="350" y2="350" stroke="black"/>
+        </svg>
+        <div id="mydiv2" class="draggable">
+            <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
+            <div class="draggable-header"">Click here to move</div>
+            <p>Move</p>
+            <p>this</p>
+            <p>DIV</p>
+        </div>
+    </div>
+</body>
+<script src="container.js"></script>
+<script src="draggable-element.js"></script>
+</html>
