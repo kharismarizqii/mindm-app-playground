@@ -1,3 +1,8 @@
+const level = {
+    "mydiv" : 0,
+    "mydiv2" : 1,
+}
+
 // Make the DIV element draggable:
 dragElement(document.getElementById("mydiv"));
 dragElement(document.getElementById("mydiv2"))
@@ -37,7 +42,7 @@ function dragElement(elmnt) {
         let left = elmnt.offsetLeft - pos1
         elmnt.style.top = top + "px";
         elmnt.style.left = left + "px";
-        updateLine()
+        updateLine(elmnt)
     }
 
     function closeDragElement() {
@@ -46,55 +51,60 @@ function dragElement(elmnt) {
         document.onmousemove = null;
     }
 
-    function updateLine() {
-        let lineId = document.querySelector(`line[id*=${elmnt.id}]`).id
-        let isStartingLine = lineId.slice(0, elmnt.id.length) == elmnt.id
-        let secondBoxId = (isStartingLine) ? lineId.substring(elmnt.id.length + 4, lineId.length) : lineId.substring(0, lineId.indexOf("-to-"))
-        let secondBox = document.getElementById(secondBoxId)
-        let secondBoxOffsetRight = secondBox.offsetLeft + secondBox.offsetWidth
-        let secondBoxHorizontalOffsetCenter = secondBox.offsetLeft + (secondBox.offsetWidth / 2)
-        let currentBoxHorizontalOffsetCenter = elmnt.offsetLeft + (secondBox.offsetWidth/ 2 )
-        let currentBoxOffsetRight = elmnt.offsetLeft + secondBox.offsetWidth
-        let y = elmnt.offsetTop + (elmnt.offsetHeight / 2) + "px"
-        let line = document.getElementById(lineId)
-        let circ1 = document.getElementById(`circ-1-of-${line.id}`)
-        let circ2 = document.getElementById(`circ-2-of-${line.id}`)
-        if (isStartingLine) {
-            let x2 = (currentBoxHorizontalOffsetCenter > secondBoxHorizontalOffsetCenter) ? secondBoxOffsetRight: secondBox.offsetLeft + "px"
-            let x1 = (currentBoxHorizontalOffsetCenter > secondBoxHorizontalOffsetCenter) ? elmnt.offsetLeft : currentBoxOffsetRight + "px"
-            line.setAttribute('x1', x1)
-            line.setAttribute('y1', y)
-            line.setAttribute('x2', x2)
-            circ1.setAttribute('cx', x1)
-            circ1.setAttribute('cy', y)
-            circ2.setAttribute('cx', x2)
-        } else {
-            let x1 = (currentBoxHorizontalOffsetCenter > secondBoxHorizontalOffsetCenter) ? secondBoxOffsetRight : secondBox.offsetLeft + "px"
-            let x2 = (currentBoxHorizontalOffsetCenter > secondBoxHorizontalOffsetCenter) ? elmnt.offsetLeft : currentBoxOffsetRight + "px"
-            line.setAttribute('x2', x2)
-            line.setAttribute('y2', y)
-            line.setAttribute('x1', x1)
-            circ2.setAttribute('cx', x2)
-            circ2.setAttribute('cy', y)
-            circ1.setAttribute('cx', x1)
-        }
+}
+
+function updateLine(elmnt) {
+    let line = document.querySelector(`path[id*=${elmnt.id}]`)
+    let lineId = line.id
+    let isStartingLine = lineId.slice(0, elmnt.id.length) == elmnt.id
+    let secondBoxId = (isStartingLine) ? lineId.substring(elmnt.id.length + 4, lineId.length) : lineId.substring(0, lineId.indexOf("-to-"))
+    let secondBox = document.getElementById(secondBoxId)
+
+    let y = elmnt.offsetTop + (elmnt.offsetHeight / 2)
+    let secondY = secondBox.offsetTop + (secondBox.offsetHeight / 2)
+    let curveY = (level[elmnt.id] < level[secondBox.id]) ? y : secondY
+    let curvePoints = getCurvePoints(line.getAttribute("d").toString())
+    
+    if (isStartingLine) {
+        let x2 = (getHorizontalOffsetCenter(elmnt) > getHorizontalOffsetCenter(secondBox)) ? getOffsetRight(secondBox) : secondBox.offsetLeft
+        let x1 = (getHorizontalOffsetCenter(elmnt) > getHorizontalOffsetCenter(secondBox)) ? elmnt.offsetLeft : getOffsetRight(elmnt);
+
+        let path = createPathString(x1, y, x2, curveY, x2, curvePoints.endY)
+        line.setAttribute("d", path)
+    } else {
+        let x1 = (getHorizontalOffsetCenter(elmnt) > getHorizontalOffsetCenter(secondBox)) ? getOffsetRight(secondBox) : secondBox.offsetLeft
+        let x2 = (getHorizontalOffsetCenter(elmnt) > getHorizontalOffsetCenter(secondBox)) ? elmnt.offsetLeft : getOffsetRight(elmnt)
+
+        let path = createPathString(x1, curvePoints.startY, x2, curveY, x2, y)
+        line.setAttribute("d", path)
+        console.log(path)
     }
 }
 
 function renderLines() {
     var firstBox = document.getElementById("mydiv")
-    var secondBox = document.getElementById("mydiv2")
+    updateLine(firstBox)
+}
 
-    let line = document.getElementById(`${firstBox.id}-to-${secondBox.id}`)
-    let circ1 = document.getElementById(`circ-1-of-${line.id}`)
-    let circ2 = document.getElementById(`circ-2-of-${line.id}`)
+function getCurvePoints(pathString) {
+    const [_, x1, y1, Q, cx, cy, x2, y2] = pathString.split(" ");
+    const startX = parseFloat(x1);
+    const startY = parseFloat(y1);
+    const endX = parseFloat(x2);
+    const endY = parseFloat(y2);
+    const controlX = parseFloat(cx);
+    const controlY = parseFloat(cy);
+    return { startX, startY, controlX, controlY, endX, endY };
+}
 
-    line.setAttribute('x1', "0px")
-    line.setAttribute('y1', firstBox.offsetHeight / 2 + "px")
-    line.setAttribute('x2', "0px")
-    line.setAttribute('y2', secondBox.offsetHeight / 2 + "px")
-    circ1.setAttribute('cx', 0)
-    circ1.setAttribute('cy', firstBox.offsetHeight / 2)
-    circ2.setAttribute('cx', 0)
-    circ2.setAttribute('cy', firstBox.offsetHeight / 2)
+function createPathString(startX, startY, controlX, controlY, endX, endY) {
+    return `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`;
+}
+
+function getOffsetRight(element) {
+    return element.offsetLeft + element.offsetWidth
+}
+
+function getHorizontalOffsetCenter(element) {
+    return element.offsetLeft + (element.offsetWidth/ 2 )
 }
